@@ -1,33 +1,42 @@
-import { MongoClient, Db } from "mongodb";
+import mongoose from 'mongoose';
 
-const uri = process.env.MONGODB_URI as string;
+const MONGODB_URI = process.env.MONGODB_URI as string;
 
-if (!uri) {
-  throw new Error("Please define the MONGODB_URI in .env.local");
+if (!MONGODB_URI) {
+  throw new Error('Please define the MONGODB_URI in .env.local');
+}
+
+interface MongooseCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
 }
 
 declare global {
-  // Prevent multiple connections in development
   // eslint-disable-next-line no-var
-  var _mongoClient: MongoClient | undefined;
-  var _mongoDb: Db | undefined;
+  var mongooseCache: MongooseCache | undefined;
 }
 
-export async function dbConnect(): Promise<Db> {
-  if (global._mongoDb) {
-    return global._mongoDb;
+let cached = global.mongooseCache;
+
+if (!cached) {
+  cached = global.mongooseCache = { conn: null, promise: null };
+}
+
+export async function dbConnect(): Promise<typeof mongoose> {
+  if (cached!.conn) {
+    return cached!.conn;
   }
 
-  const client =
-    global._mongoClient || new MongoClient(uri);
-
-  if (!global._mongoClient) {
-    global._mongoClient = client;
-    await client.connect();
+  if (!cached!.promise) {
+    cached!.promise = mongoose.connect(MONGODB_URI).then((m) => m);
   }
 
-  const db = client.db(); // Uses DB name from URI
-  global._mongoDb = db;
+  try {
+    cached!.conn = await cached!.promise;
+  } catch (e) {
+    cached!.promise = null;
+    throw e;
+  }
 
-  return db;
+  return cached!.conn!;
 }

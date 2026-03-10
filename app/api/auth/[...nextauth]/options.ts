@@ -44,30 +44,27 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
     
-    async jwt({ user ,token }) {
-
-
-      if(user){
-        token._id=user._id?.toString()
-        token.isverified=user.isverified
-        token.isacceptingmessages=user.isacceptingmessage
-        token.username = user.username
+    async jwt({ user, token }) {
+      if (user) {
+        token._id = user._id?.toString();
+        token.isverified = user.isverified;
+        token.isacceptingmessage = user.isacceptingmessage;
+        token.username = user.username;
       }
-      return token
+      return token;
     },
-    async session({  session, token }) {
-
-        if(token){
-            session.user._id = token._id
-            session.user.isverified = token.isverified
-            session.user.isacceptingmessage=token.isacceptingmessage
-            session.user.username = token.username
-        }
-      return session
-    }
+    async session({ session, token }) {
+      if (token) {
+        session.user._id = token._id;
+        session.user.isverified = token.isverified;
+        session.user.isacceptingmessage = token.isacceptingmessage;
+        session.user.username = token.username;
+      }
+      return session;
+    },
 },
     pages: {
-        signIn: '/signin',
+        signIn: '/sign-in',
     },
     session: {
         strategy: 'jwt',

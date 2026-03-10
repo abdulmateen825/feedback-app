@@ -55,19 +55,17 @@ export async function POST(req: Request){
         await newuser.save()
         }
 
-        //send verify email
-
-        const emailresponse =await sendVerificationEmail(email ,username , verifycode)
-         if(!emailresponse.success){
-            return Response.json({
-                success: false,
-                message : "username is already taken"
-            })
-         }
-         return Response.json({
-                success: true,
-                message : "user registered . plz verify your email"
-            })
+        const emailresponse = await sendVerificationEmail(email, username, verifycode);
+        if (!emailresponse.success) {
+          return Response.json({
+            success: false,
+            message: 'Failed to send verification email',
+          });
+        }
+        return Response.json({
+          success: true,
+          message: 'User registered. Please verify your email',
+        });
     } catch (error) {
         console.error("error registering user ")
         return Response.json({
